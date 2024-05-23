@@ -1,0 +1,101 @@
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+
+class Question {
+    String question;
+    String[] options;
+    int correctAnswer;
+
+    public Question(String question, String[] options, int correctAnswer) {
+        this.question = question;
+        this.options = options;
+        this.correctAnswer = correctAnswer;
+    }
+}
+
+public class QuizApp {
+    private static Question[] questions;
+    private static int score;
+    private static int currentQuestionIndex;
+    private static boolean answered;
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        
+        // Initialize questions
+        questions = new Question[] {
+            new Question("What is the capital of France?", new String[]{"1. Berlin", "2. London", "3. Paris", "4. Madrid"}, 3),
+            new Question("What is 2 + 2?", new String[]{"1. 3", "2. 4", "3. 5", "4. 6"}, 2),
+            new Question("Which planet is known as the Red Planet?", new String[]{"1. Earth", "2. Mars", "3. Jupiter", "4. Venus"}, 2)
+        };
+
+        score = 0;
+        currentQuestionIndex = 0;
+
+        for (Question question : questions) {
+            answered = false;
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (!answered) {
+                        System.out.println("\nTime's up! Moving to the next question...");
+                        displayNextQuestion(scanner);
+                    }
+                }
+            }, 10000); // 10 seconds for each question
+
+            displayQuestion(question, scanner);
+            timer.cancel();
+        }
+
+        displayResults();
+        scanner.close();
+    }
+
+    private static void displayQuestion(Question question, Scanner scanner) {
+        System.out.println(question.question);
+        for (String option : question.options) {
+            System.out.println(option);
+        }
+        System.out.print("Enter your answer (1-4): ");
+
+        long startTime = System.currentTimeMillis();
+        while ((System.currentTimeMillis() - startTime) < 10000 && !answered) {
+            if (scanner.hasNextInt()) {
+                int answer = scanner.nextInt();
+                answered = true;
+                if (answer == question.correctAnswer) {
+                    System.out.println("Correct!");
+                    score++;
+                } else {
+                    System.out.println("Incorrect!");
+                }
+                displayNextQuestion(scanner);
+                return;
+            }
+        }
+
+        if (!answered) {
+            System.out.println("\nTime's up! Moving to the next question...");
+            displayNextQuestion(scanner);
+        }
+    }
+
+    private static void displayNextQuestion(Scanner scanner) {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+        } else {
+            System.out.println("Quiz completed!");
+        }
+    }
+
+    private static void displayResults() {
+        System.out.println("\nQuiz Results:");
+        System.out.println("Total Questions: " + questions.length);
+        System.out.println("Correct Answers: " + score);
+        System.out.println("Incorrect Answers: " + (questions.length - score));
+        System.out.println("Final Score: " + score + "/" + questions.length);
+    }
+}
